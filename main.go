@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/desferreira/quiet_hn/hn"
@@ -69,9 +70,12 @@ func getTopStories(numStories int) ([]item, error) {
 var (
 	cache           []item
 	cacheExpiration time.Time
+	cacheMutex      sync.Mutex
 )
 
 func getCachedStories(numStories int) ([]item, error) {
+	cacheMutex.Lock()
+	defer cacheMutex.Unlock()
 	if time.Now().Sub(cacheExpiration) < 0 {
 		return cache, nil
 	}
